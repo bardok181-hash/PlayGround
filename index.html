@@ -183,8 +183,12 @@
   document.getElementById('sound').addEventListener('click',e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'♫':'♪';if(soundOn)chirp(620);});
   window.addEventListener('keydown',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[k]=true;if(e.key===' '&&running){paused=!paused;showMsg(paused?'Paused — press Space to continue':'Back to the island!');}});
   window.addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false;});
-  document.querySelectorAll('.touch-pad button[data-dir]').forEach(btn=>{const dir=btn.dataset.dir;const down=e=>{e.preventDefault();touch[dir]=true;btn.classList.add('down');btn.setPointerCapture?.(e.pointerId);};const up=e=>{e.preventDefault();touch[dir]=false;btn.classList.remove('down');};btn.addEventListener('pointerdown',down);btn.addEventListener('pointerup',up);btn.addEventListener('pointercancel',up);btn.addEventListener('lostpointercapture',up);});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused){paused=true;showMsg('Paused while you were away');}});
+  const activePointers=new Map();
+  function releasePointer(e){const dir=activePointers.get(e.pointerId);if(!dir)return;activePointers.delete(e.pointerId);touch[dir]=[...activePointers.values()].includes(dir);document.querySelector(`.touch-pad [data-dir="${dir}"]`)?.classList.toggle('down',touch[dir]);}
+  function releaseAllInput(){activePointers.clear();Object.keys(touch).forEach(dir=>touch[dir]=false);Object.keys(keys).forEach(key=>keys[key]=false);document.querySelectorAll('.touch-pad button.down').forEach(btn=>btn.classList.remove('down'));}
+  document.querySelectorAll('.touch-pad button[data-dir]').forEach(btn=>{const dir=btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();activePointers.set(e.pointerId,dir);touch[dir]=true;btn.classList.add('down');try{btn.setPointerCapture(e.pointerId);}catch(_){}});btn.addEventListener('pointerup',releasePointer);btn.addEventListener('pointercancel',releasePointer);btn.addEventListener('lostpointercapture',releasePointer);});
+  window.addEventListener('pointerup',releasePointer);window.addEventListener('pointercancel',releasePointer);window.addEventListener('blur',releaseAllInput);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){releaseAllInput();if(running&&!paused){paused=true;showMsg('Paused while you were away');}}});
 })();
 </script>
 </body>
