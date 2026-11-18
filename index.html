@@ -98,6 +98,7 @@
             <button type="button" class="forge-entry" id="openWorkshop">🛠️ Taller de forja y tienda</button>
             <div class="howto"><span>⌨️ WASD / arrow keys</span><span>👆 touch controls</span><span>🥥 J / tap to attack</span></div>
             <button class="play-btn" id="play">Continuar</button>
+            <button class="forge-entry" id="returnToIslands" type="button" hidden>Volver a la selección de islas</button>
           </div>
           <section class="workshop" id="workshop" aria-label="Taller de forja">
             <div class="card-art">🛠️</div><h2>Taller de forja</h2><p>Armas, materiales y mejoras se guardan por separado de monedas y puntos.</p>
@@ -250,7 +251,7 @@
   function renderHearts(){heartsEl.innerHTML=Array.from({length:3},(_,i)=>{const fill=Math.max(0,Math.min(1,hearts-i));return fill>=1?'♥':fill>=.5?'<span class="half-heart">♥</span>':'♡';}).join(' ');}
   function loseHeart(msg,lossCopy,amount=1){hearts=Math.max(0,hearts-amount);renderHearts();player.invuln=1700;showMsg(hearts?msg:'');chirp(180);if(hearts<=0)endGame(false,lossCopy);}
   function showMsg(text){messageEl.textContent=text;messageEl.classList.add('show');clearTimeout(msgTimer);msgTimer=setTimeout(()=>messageEl.classList.remove('show'),1700);}
-  function endGame(success,copy){running=false;won=success;lost=!success;titleEl.textContent=success?'Island harmony!':'Try another tide';textEl.textContent=success?`${copy} You gathered every conch on ${stages[currentStage].name} and brought its music home.`:`${copy} The shells on ${stages[currentStage].name} are waiting when you're ready.`;artEl.textContent=success?'🌺 ✨ 🐚':'🌧️ 🦀 🌊';playBtn.textContent='Play again';overlay.classList.remove('hidden');}
+  function endGame(success,copy){running=false;won=success;lost=!success;titleEl.textContent=success?'Island harmony!':'Try another tide';textEl.textContent=success?`${copy} You gathered every conch on ${stages[currentStage].name} and brought its music home.`:`${copy} The shells on ${stages[currentStage].name} are waiting when you're ready.`;artEl.textContent=success?'🌺 ✨ 🐚':'🌧️ 🦀 🌊';playBtn.textContent='Play again';document.getElementById('returnToIslands').hidden=success;overlay.classList.remove('hidden');}
   function saveWeapons(){try{localStorage.setItem(weaponKey,equippedWeapon);localStorage.setItem(ownedWeaponsKey,JSON.stringify(ownedWeapons));localStorage.setItem(coinsKey,String(totalCoins));}catch(_){}}
   function saveMaterials(){try{localStorage.setItem(materialKey,JSON.stringify(materials));localStorage.setItem(upgradeKey,JSON.stringify(weaponLevels));localStorage.setItem(qualityKey,JSON.stringify(weaponQualityLevels));}catch(_){}}
   function rollMaterial(){const rollQuality=()=>{const roll=Math.random();return roll<.55?'basic':roll<.78?'medium':roll<.94?'high':'legendary';};const drops=[rollQuality()];if(Math.random()<.2)drops.push(rollQuality());for(const quality of drops)materials[quality]++;saveMaterials();refreshWorkshop();const loot=drops.map(quality=>materialData[quality].name).join(', ');showMsg(`Enemigo derrotado: +${drops.length} ${drops.length===1?'material':'materiales'}: ${loot}`);}
@@ -296,6 +297,7 @@
   function frame(t){let dt=Math.min(40,t-(last||t));last=t;update(dt,t);draw(t);requestAnimationFrame(frame);}requestAnimationFrame(frame);
   continueIntro.addEventListener('click',()=>{introScreen.classList.add('hidden');playBtn.focus();});
    playBtn.addEventListener('click',()=>start(selectedStage));
+   document.getElementById('returnToIslands').addEventListener('click',()=>{selectedStage=currentStage;overlay.classList.add('hidden');islandSelection.hidden=false;workshop.hidden=true;workshop.classList.remove('active');refreshIslandOptions();titleEl.textContent='The Conch Keeper';textEl.textContent='Choose an island. Conches earn coins; survive to earn points, unlock shores, and buy harder difficulties.';artEl.textContent='🌺 🐚 🌺';playBtn.textContent='Continuar';document.getElementById('returnToIslands').hidden=true;overlay.classList.remove('hidden');});
   attackBtn.addEventListener('click',e=>{e.preventDefault();attack();});
   islandButtons.forEach((button,index)=>button.addEventListener('click',()=>{if(!stageUnlocked(index))return;selectedStage=index;refreshIslandOptions();titleEl.textContent=stages[index].name;textEl.textContent=`${stages[index].name} is ready. Double-click this island or press the sail button to begin. Survive to earn points, collect shells for coins, avoid crabs and lobsters, and explore without a time limit.`;artEl.textContent=`${stages[index].icon} 🐚 🌺`;playBtn.textContent='Continuar';}));
   islandButtons.forEach((button,index)=>button.addEventListener('dblclick',()=>{if(!stageUnlocked(index))return;selectedStage=index;start(index);}));
