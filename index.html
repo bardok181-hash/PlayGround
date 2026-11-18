@@ -16,7 +16,7 @@
     h1{font-size:clamp(16px,2.5vw,23px);line-height:1;margin:0;letter-spacing:.02em}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.21em;color:#a8d7ce;margin-bottom:4px}
     .top-note{font-size:12px;color:#c6e2d6;letter-spacing:.04em;text-align:right}
     .game-frame{position:relative;width:100%;aspect-ratio:3/2;border-radius:24px;overflow:hidden;border:2px solid rgba(255,230,174,.55);box-shadow:0 22px 65px #001c2bb0, inset 0 0 0 1px #fff4d033;background:#087f92}
-    canvas{display:block;width:100%;height:100%;touch-action:none}
+    canvas{display:block;width:100%;height:100%;background:#07576f;touch-action:none}
     .hud{position:absolute;inset:14px 16px auto;display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none;gap:10px}
     .pill{display:flex;align-items:center;gap:10px;min-height:43px;padding:8px 14px;border:1px solid #fff3d648;border-radius:15px;background:var(--glass);box-shadow:0 5px 16px #04283545;backdrop-filter:blur(8px);font-size:13px;font-weight:700}
     .collect-count{color:#ffe49e;font-size:16px}.heart-row{letter-spacing:2px;color:#ff8171;font-size:17px}.timer{font-variant-numeric:tabular-nums;color:#fff4d0}.goal-label{font-size:10px;letter-spacing:.1em;color:#b8d9cf;text-transform:uppercase;display:block;margin-bottom:1px}
@@ -35,16 +35,16 @@
     .howto{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:15px 0 21px}.howto span{font-size:11px;background:#ffffff13;border:1px solid #ffffff25;border-radius:20px;padding:7px 10px;color:#e3eee0}
     button{font:inherit;color:inherit}.play-btn{border:0;border-radius:999px;background:linear-gradient(#ffdc8a,#efa94c);color:#4d2e23;font-weight:900;padding:13px 28px;min-width:170px;box-shadow:0 5px 0 #aa6437,0 9px 20px #041e2a66;cursor:pointer;transition:transform .12s,filter .12s}.play-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}.play-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #aa6437}
     .bottomline{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#c5ded5;font-size:11px;padding:0 4px}.bottomline strong{color:#ffe1a0;font-weight:700}
-    .touch-pad{position:absolute;left:14px;bottom:14px;width:126px;height:126px;display:none;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:4px;touch-action:none;user-select:none}
-    .touch-pad button{border:1px solid #fff5d65c;background:#073f50b8;backdrop-filter:blur(5px);border-radius:13px;font-size:19px;color:#fff2ce;touch-action:none;padding:0;box-shadow:0 3px 8px #00273766}
-    .touch-pad button:active,.touch-pad button.down{background:#d7954cdd;color:#fff}
+    .touch-pad{position:absolute;left:max(14px,calc(env(safe-area-inset-left) + 12px));bottom:max(18px,calc(env(safe-area-inset-bottom) + 18px));width:clamp(128px,34vw,150px);height:clamp(128px,34vw,150px);display:none;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:5px;touch-action:none;user-select:none;z-index:2}
+    .touch-pad button{border:1px solid #fff5d680;background:#073f50d9;backdrop-filter:blur(5px);border-radius:14px;font-size:clamp(22px,6vw,27px);color:#fff2ce;touch-action:none;padding:0;box-shadow:0 3px 8px #00273766}
+    .touch-pad button:active,.touch-pad button.is-pressed{background:#d7954cdd;color:#fff}
     .touch-pad .up{grid-area:1/2}.touch-pad .left{grid-area:2/1}.touch-pad .center{grid-area:2/2;opacity:.5;font-size:13px}.touch-pad .right{grid-area:2/3}.touch-pad .down{grid-area:3/2}
     .sound-btn{position:absolute;right:16px;bottom:16px;z-index:2;border:1px solid #fff5d65c;border-radius:50%;width:40px;height:40px;background:#073f50b8;font-size:17px;cursor:pointer}
     .fullscreen-btn{position:absolute;right:64px;bottom:16px;z-index:2;border:1px solid #fff5d65c;border-radius:50%;width:40px;height:40px;background:#073f50b8;font-size:17px;cursor:pointer}
     body{padding:0;min-height:100vh;min-height:100svh;overflow:hidden}.game-shell{width:100%;height:100vh;height:100svh;gap:0}.topbar,.bottomline{display:none}.game-frame{flex:1;min-height:0;width:100%;height:100%;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none}
     @media(max-width:600px){body{padding:0}.game-shell{gap:0}.game-frame{border-radius:0;aspect-ratio:auto}.fullscreen-btn{right:52px;bottom:9px;width:35px;height:35px}}
     @media (pointer:coarse){.touch-pad{display:grid}.bottomline .desktop-hint{display:none}}
-    @media(max-width:600px){body{padding:10px;align-items:center}.game-shell{gap:9px}.game-frame{border-radius:16px;aspect-ratio:1/1.04}.top-note{font-size:10px;max-width:110px}.brand-mark{width:36px;height:36px;font-size:19px}.hud{inset:8px 8px auto;gap:5px}.pill{min-height:35px;padding:6px 9px;border-radius:12px;font-size:11px;gap:6px}.collect-count{font-size:14px}.heart-row{font-size:14px}.goal-label{font-size:8px}.message{top:52px;font-size:11px}.bottomline{font-size:10px}.touch-pad{width:108px;height:108px;left:9px;bottom:9px}.touch-pad button{border-radius:10px}.sound-btn{right:9px;bottom:9px;width:35px;height:35px}}
+    @media(max-width:600px){.top-note{font-size:10px;max-width:110px}.brand-mark{width:36px;height:36px;font-size:19px}.hud{inset:8px 8px auto;gap:5px}.pill{min-height:35px;padding:6px 9px;border-radius:12px;font-size:11px;gap:6px}.collect-count{font-size:14px}.heart-row{font-size:14px}.goal-label{font-size:8px}.message{top:52px;font-size:11px}.bottomline{font-size:10px}.touch-pad{width:clamp(128px,34vw,150px);height:clamp(128px,34vw,150px);left:max(12px,calc(env(safe-area-inset-left) + 10px));bottom:max(18px,calc(env(safe-area-inset-bottom) + 18px))}.touch-pad button{border-radius:14px}.sound-btn{right:max(9px,calc(env(safe-area-inset-right) + 9px));bottom:max(9px,calc(env(safe-area-inset-bottom) + 9px));width:35px;height:35px}}
     @media(max-height:650px) and (min-width:601px){body{padding:8px}.game-shell{width:min(980px,100%);gap:7px}.game-frame{max-height:calc(100svh - 92px)}.topbar .brand-mark{width:34px;height:34px}}
   </style>
 </head>
@@ -99,7 +99,7 @@
   const player={x:480,y:542,r:13,face:0,walk:0,invuln:0};
   const island=[ [76,326],[113,228],[183,162],[276,129],[359,98],[458,105],[550,79],[650,104],[747,127],[829,186],[886,260],[901,342],[870,419],[815,486],[730,529],[638,555],[548,569],[460,553],[366,574],[269,552],[190,521],[121,470],[83,399] ];
   const pointIn=(x,y)=>{let inside=false;for(let i=0,j=island.length-1;i<island.length;j=i++){const [xi,yi]=island[i],[xj,yj]=island[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}return inside;};
-  function resize(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);}
+  function resize(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);const scale=Math.min(canvas.width/W,canvas.height/H),offsetX=(canvas.width-W*scale)/2,offsetY=(canvas.height-H*scale)/2;ctx.setTransform(scale,0,0,scale,offsetX,offsetY);}
   new ResizeObserver(resize).observe(canvas); resize();
   function rounded(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
   function polygon(points,fill,stroke=null,width=1){ctx.beginPath();ctx.moveTo(...points[0]);points.slice(1).forEach(p=>ctx.lineTo(...p));ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}}
@@ -191,9 +191,9 @@
   window.addEventListener('keydown',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[k]=true;if(e.key===' '&&running){paused=!paused;showMsg(paused?'Paused — press Space to continue':'Back to the island!');}});
   window.addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false;});
   const activePointers=new Map();
-  function releasePointer(e){const dir=activePointers.get(e.pointerId);if(!dir)return;activePointers.delete(e.pointerId);touch[dir]=[...activePointers.values()].includes(dir);document.querySelector(`.touch-pad [data-dir="${dir}"]`)?.classList.toggle('down',touch[dir]);}
-  function releaseAllInput(){activePointers.clear();Object.keys(touch).forEach(dir=>touch[dir]=false);Object.keys(keys).forEach(key=>keys[key]=false);document.querySelectorAll('.touch-pad button.down').forEach(btn=>btn.classList.remove('down'));}
-  document.querySelectorAll('.touch-pad button[data-dir]').forEach(btn=>{const dir=btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();activePointers.set(e.pointerId,dir);touch[dir]=true;btn.classList.add('down');try{btn.setPointerCapture(e.pointerId);}catch(_){}});btn.addEventListener('pointerup',releasePointer);btn.addEventListener('pointercancel',releasePointer);btn.addEventListener('lostpointercapture',releasePointer);});
+  function releasePointer(e){const dir=activePointers.get(e.pointerId);if(!dir)return;activePointers.delete(e.pointerId);touch[dir]=[...activePointers.values()].includes(dir);document.querySelector(`.touch-pad [data-dir="${dir}"]`)?.classList.toggle('is-pressed',touch[dir]);}
+  function releaseAllInput(){activePointers.clear();Object.keys(touch).forEach(dir=>touch[dir]=false);Object.keys(keys).forEach(key=>keys[key]=false);document.querySelectorAll('.touch-pad button.is-pressed').forEach(btn=>btn.classList.remove('is-pressed'));}
+  document.querySelectorAll('.touch-pad button[data-dir]').forEach(btn=>{const dir=btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();activePointers.set(e.pointerId,dir);touch[dir]=true;btn.classList.add('is-pressed');try{btn.setPointerCapture(e.pointerId);}catch(_){}});btn.addEventListener('pointerup',releasePointer);btn.addEventListener('pointercancel',releasePointer);btn.addEventListener('lostpointercapture',releasePointer);});
   window.addEventListener('pointerup',releasePointer);window.addEventListener('pointercancel',releasePointer);window.addEventListener('blur',releaseAllInput);
   document.addEventListener('visibilitychange',()=>{if(document.hidden){releaseAllInput();if(running&&!paused){paused=true;showMsg('Paused while you were away');}}});
 })();
