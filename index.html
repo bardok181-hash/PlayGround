@@ -207,7 +207,7 @@
     if(d.drainTarget&&!reinforcements.includes(d.drainTarget)){d.drainTarget.drained=false;d.drainTarget=null;d.drainTimer=0;}
     if(d.draining&&d.health>=d.maxHealth){d.draining=false;if(d.drainTarget)d.drainTarget.drained=false;d.drainTarget=null;}
     if(!d.draining&&d.health/d.maxHealth<.5)d.draining=true;
-    if(d.draining&&!d.drainTarget){const source=reinforcements.filter(e=>e.health>0).sort((a,b)=>Math.hypot(a.x-d.x,a.y-d.y)-Math.hypot(b.x-d.x,b.y-d.y))[0];if(source){d.drainTarget=source;source.drained=true;d.drainTimer=700;}else d.draining=false;}
+    if(d.draining&&!d.drainTarget){const source=reinforcements.filter(e=>e.health>0).sort((a,b)=>Math.hypot(a.x-d.x,a.y-d.y)-Math.hypot(b.x-d.x,b.y-d.y))[0];if(source){d.drainTarget=source;source.drained=true;d.drainTimer=source.maxHealth<=3?2000:3000;}else d.draining=false;}
     if(d.drainTarget){d.drainTimer-=dt;if(d.drainTimer<=0){const source=d.drainTarget;source.drained=false;const amount=Math.min(source.health,d.maxHealth-d.health);source.health-=amount;d.health=Math.min(d.maxHealth,d.health+amount);d.drainTarget=null;d.drainTimer=0;if(source.health<=0){lobsters=lobsters.filter(e=>e!==source);crabs=crabs.filter(e=>e!==source);}showMsg('The dragon drained a subordinate and restored its health!');chirp(330);if(d.health>=d.maxHealth)d.draining=false;}}
     const dx=player.x-d.x,dy=player.y-d.y,distance=Math.hypot(dx,dy)||1,speed=d.speed*18*dt/1000,nx=d.x+dx/distance*speed,ny=d.y+dy/distance*speed;if(pointIn(nx,ny))d.x=nx,d.y=ny;
     d.orbTimer-=dt;if(d.orbTimer<=0&&distance>55){d.orbTimer=2200;const vx=dx/distance*190,vy=dy/distance*190;dragonOrbs.push({x:d.x,y:d.y,vx,vy,life:5000});}}
