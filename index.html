@@ -54,9 +54,9 @@
     <section class="game-frame" aria-label="Monsoon Isle game">
       <canvas id="game" aria-label="Top-down island adventure game"></canvas>
       <div class="hud">
-        <div class="pill"><span>🐚</span><span class="collect-count"><span id="found">0</span> / 5</span><span><span class="goal-label">conch shells</span></span></div>
+            <div class="pill"><span>🪙</span><span class="collect-count" id="coins">0</span><span class="goal-label">coins</span></div>
+        <div class="pill"><span>⭐</span><span class="collect-count" id="points">0</span><span class="goal-label">points</span></div>
         <div class="pill"><span class="heart-row" id="hearts">♥ ♥ ♥</span></div>
-        <div class="pill"><span>⏳</span><span class="timer" id="timer">01:30</span></div>
       </div>
       <div class="message" id="message">A shell is singing nearby!</div>
       <div class="touch-pad" id="touchPad" aria-label="Touch movement controls">
@@ -64,19 +64,19 @@
       </div>
       <button class="sound-btn" id="sound" aria-label="Toggle sound" title="Toggle sound">♫</button>
       <div class="overlay" id="overlay">
-        <div class="card"><div class="card-art" id="cardArt">🌺 🐚 🌺</div><h2 id="cardTitle">The Conch Keeper</h2><p id="cardText">Choose an island. Each one is its own adventure; new shores open as time passes.</p><div class="island-options" id="islandOptions" aria-label="Choose an island">
+        <div class="card"><div class="card-art" id="cardArt">🌺 🐚 🌺</div><h2 id="cardTitle">The Conch Keeper</h2><p id="cardText">Choose an island. Collect conches for coins and points; earn enough points to open new shores.</p><div class="island-options" id="islandOptions" aria-label="Choose an island">
           <button class="island-option selected" data-island="0"><span class="island-icon">🏝️</span><strong>Lagoon Isle</strong><small>Open now</small></button>
-          <button class="island-option" data-island="1" disabled><span class="island-icon">🪸</span><strong>Coral Atoll</strong><small>Opens in 00:30</small></button>
-          <button class="island-option" data-island="2" disabled><span class="island-icon">🌿</span><strong>Spice Grove</strong><small>Opens in 01:00</small></button>
+          <button class="island-option" data-island="1" disabled><span class="island-icon">🪸</span><strong>Coral Atoll</strong><small>Needs 2 points</small></button>
+          <button class="island-option" data-island="2" disabled><span class="island-icon">🌿</span><strong>Spice Grove</strong><small>Needs 5 points</small></button>
         </div><div class="howto"><span>⌨️ WASD / arrow keys</span><span>👆 touch controls</span><span>🦀 watch the crabs!</span></div><button class="play-btn" id="play">Set sail</button></div>
       </div>
     </section>
-    <footer class="bottomline"><span class="desktop-hint">Move with <strong>WASD</strong> or <strong>arrow keys</strong> · <strong>Space</strong> to pause</span><span>Collect 5 shells, then find the <strong>shrine</strong> ✨</span></footer>
+    <footer class="bottomline"><span class="desktop-hint">Move with <strong>WASD</strong> or <strong>arrow keys</strong> · <strong>Space</strong> to pause</span><span>Conches drop 🪙 coins · collect coins to earn ⭐ points and open islands</span></footer>
   </main>
 <script>
 (() => {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
-  const foundEl = document.getElementById('found'), heartsEl = document.getElementById('hearts'), timerEl = document.getElementById('timer');
+  const coinsEl=document.getElementById('coins'),pointsEl=document.getElementById('points'),heartsEl=document.getElementById('hearts');
   const overlay = document.getElementById('overlay'), titleEl = document.getElementById('cardTitle'), textEl = document.getElementById('cardText'), artEl = document.getElementById('cardArt'), playBtn = document.getElementById('play');
   const messageEl = document.getElementById('message');
   const islandButtons=[...document.querySelectorAll('.island-option')];
@@ -86,11 +86,12 @@
     {name:'Coral Atoll',icon:'🪸',palette:{sea:['#45b7ad','#128b9b','#126b83'],surf:'#d1f2c7',sand:'#f0cf88',grass:'#398b68',clearing:'#50a077',inner:'#5aa77d'},shells:[[197,315],[365,224],[719,280],[703,438],[395,473]],crabs:[[319,355],[584,289],[626,447]]},
     {name:'Spice Grove',icon:'🌿',palette:{sea:['#36a2ae','#08748c','#064e69'],surf:'#d9edb5',sand:'#e6bd70',grass:'#548344',clearing:'#69904b',inner:'#759957'},shells:[[297,209],[652,238],[790,354],[572,454],[210,408]],crabs:[[409,271],[551,391],[699,450]]}
   ];
-  const unlockDelays=[0,30000,60000];
-  const unlockKey='monsoon-isle-first-visit';
-  let firstVisit=Date.now();try{firstVisit=Number(localStorage.getItem(unlockKey))||firstVisit;localStorage.setItem(unlockKey,String(firstVisit));}catch(_){}
+  const pointsKey='monsoon-isle-points',coinsKey='monsoon-isle-coins';
+  let totalPoints=0,totalCoins=0;try{totalPoints=Number(localStorage.getItem(pointsKey))||0;totalCoins=Number(localStorage.getItem(coinsKey))||0;}catch(_){}
+  const unlockPoints=[0,2,5];
+  const crabEvery=10000,shellEvery=10000;
   let selectedStage=0,currentStage=0,shells=[],crabs=[];
-  let running=false,paused=false,won=false,lost=false,remaining=90,last=0,elapsed=0,hearts=3,shellCount=0,msgTimer=0,soundOn=false,audio;
+  let running=false,paused=false,won=false,lost=false,last=0,elapsed=0,hearts=3,coins=0,shellSpawnTimer=0,crabSpawnTimer=0,msgTimer=0,soundOn=false,audio;
   const player={x:480,y:542,r:13,face:0,walk:0,invuln:0};
   const island=[ [76,326],[113,228],[183,162],[276,129],[359,98],[458,105],[550,79],[650,104],[747,127],[829,186],[886,260],[901,342],[870,419],[815,486],[730,529],[638,555],[548,569],[460,553],[366,574],[269,552],[190,521],[121,470],[83,399] ];
   const pointIn=(x,y)=>{let inside=false;for(let i=0,j=island.length-1;i<island.length;j=i++){const [xi,yi]=island[i],[xj,yj]=island[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}return inside;};
@@ -137,7 +138,7 @@
   }
   function tree(x,y,s=1,kind=0){if(kind===0){palm(x,y,s,(x%3-1)*7);return;}ctx.save();ctx.translate(x,y);ctx.scale(s,s);ellipse(0,6,18,6,'#315d48');ctx.fillStyle=kind===1?'#287653':'#427d4d';for(let i=0;i<7;i++){const a=i*Math.PI*2/7;ellipse(Math.cos(a)*10,Math.sin(a)*7-3,10,7,ctx.fillStyle);}ellipse(0,-8,12,10,kind===1?'#338459':'#57965b');ctx.restore();}
   const trees=[[190,242,1.05,0],[756,256,.88,0],[170,420,.9,0],[804,424,.92,0],[347,191,.65,1],[623,184,.7,1],[364,494,.65,2],[625,480,.7,2],[305,373,.68,2],[657,318,.65,1],[535,225,.55,2],[253,330,.55,1]];
-  function drawShell(sh,t){if(sh.got)return;let bob=Math.sin(t*.003+sh.phase)*3;ctx.save();ctx.translate(sh.x,sh.y+bob);ctx.shadowColor='#fff4a8';ctx.shadowBlur=16;ellipse(0,5,14,7,'#24634d');ctx.fillStyle='#fff0b0';ctx.beginPath();ctx.moveTo(-8,3);ctx.quadraticCurveTo(-10,-8,-3,-9);ctx.quadraticCurveTo(0,-10,1,-6);ctx.quadraticCurveTo(5,-11,8,-5);ctx.quadraticCurveTo(12,1,7,4);ctx.quadraticCurveTo(0,8,-8,3);ctx.fill();ctx.strokeStyle='#e0a75c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-5,-4);ctx.lineTo(-2,3);ctx.moveTo(0,-5);ctx.lineTo(1,4);ctx.moveTo(5,-4);ctx.lineTo(4,3);ctx.stroke();ctx.restore();}
+  function drawShell(sh,t){let bob=Math.sin(t*.003+sh.phase)*3;ctx.save();ctx.translate(sh.x,sh.y+bob);ctx.shadowColor='#fff4a8';ctx.shadowBlur=16;ellipse(0,5,14,7,'#24634d');ctx.fillStyle='#fff0b0';ctx.beginPath();ctx.moveTo(-8,3);ctx.quadraticCurveTo(-10,-8,-3,-9);ctx.quadraticCurveTo(0,-10,1,-6);ctx.quadraticCurveTo(5,-11,8,-5);ctx.quadraticCurveTo(12,1,7,4);ctx.quadraticCurveTo(0,8,-8,3);ctx.fill();ctx.strokeStyle='#e0a75c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-5,-4);ctx.lineTo(-2,3);ctx.moveTo(0,-5);ctx.lineTo(1,4);ctx.moveTo(5,-4);ctx.lineTo(4,3);ctx.stroke();ctx.restore();}
   function drawCrab(c,t){ctx.save();ctx.translate(c.x,c.y);let blink=Math.sin(t*.008+c.phase)>-.8;ellipse(0,9,13,5,'#285b49');ctx.strokeStyle='#b8513c';ctx.lineWidth=3;for(let i=-1;i<=1;i+=2){ctx.beginPath();ctx.moveTo(i*7,1);ctx.lineTo(i*14,-4);ctx.lineTo(i*17,2);ctx.stroke();ctx.beginPath();ctx.moveTo(i*7,5);ctx.lineTo(i*13,10);ctx.stroke();}ellipse(0,0,12,8,'#e8754f');for(let i=-1;i<=1;i+=2){ctx.strokeStyle='#d86247';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(i*6,-4);ctx.lineTo(i*7,-10);ctx.stroke();ellipse(i*7,-10,3,3,'#fff0c9');if(blink)ellipse(i*7,-10,1.2,1.5,'#334846');}ctx.restore();}
   function drawPlayer(t){ctx.save();ctx.translate(player.x,player.y);if(player.invuln>0&&Math.floor(t/90)%2===0){ctx.globalAlpha=.4;}const bob=Math.sin(player.walk)*1.5;ellipse(0,12,14,6,'#245845');
     // feet
@@ -153,19 +154,21 @@
     // shell satchel
     rounded(7,-5,8,8,3);ctx.fillStyle='#a9743f';ctx.fill();ctx.strokeStyle='#ffe2a0';ctx.lineWidth=1;ctx.beginPath();ctx.arc(11,-2,2.3,0,Math.PI);ctx.stroke();ctx.restore();}
   function draw(t){ctx.clearRect(0,0,W,H);drawSea(t);trees.forEach(([x,y,s,k])=>tree(x,y,s,k));drawTemple();shells.forEach(sh=>drawShell(sh,t));crabs.forEach(c=>drawCrab(c,t));drawPlayer(t);ctx.save();rounded(402,602,156,24,12);ctx.fillStyle='#063f4ddd';ctx.fill();ctx.strokeStyle='#fff3d648';ctx.stroke();ctx.fillStyle='#fff0c8';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(`${stages[currentStage].icon}  ${stages[currentStage].name}`,480,618);ctx.restore();}
-  function update(dt,t){if(!running||paused||won||lost)return;remaining-=dt/1000;elapsed+=dt;if(remaining<=0){remaining=0;endGame(false,'The monsoon is here!');return;}if(player.invuln>0)player.invuln-=dt;
+  function update(dt,t){if(!running||paused||won||lost)return;elapsed+=dt;shellSpawnTimer+=dt;crabSpawnTimer+=dt;if(player.invuln>0)player.invuln-=dt;
     let dx=(keys.ArrowRight||keys.d||touch.right?1:0)-(keys.ArrowLeft||keys.a||touch.left?1:0),dy=(keys.ArrowDown||keys.s||touch.down?1:0)-(keys.ArrowUp||keys.w||touch.up?1:0);if(dx||dy){let l=Math.hypot(dx,dy);dx/=l;dy/=l;player.face=Math.atan2(dy,dx);player.walk+=dt*.016;let speed=178*(dt/1000),nx=player.x+dx*speed,ny=player.y+dy*speed;if(pointIn(nx,player.y)&&Math.hypot(nx-480,ny-136)>49)player.x=nx;if(pointIn(player.x,ny)&&Math.hypot(player.x-480,ny-136)>49)player.y=ny;}
-    shells.forEach(sh=>{if(!sh.got&&Math.hypot(player.x-sh.x,player.y-sh.y)<27){sh.got=true;shellCount++;foundEl.textContent=shellCount;showMsg(['A shell is singing nearby!','Lovely! One more for the shrine.','The sea is smiling at you!'][shellCount%3]);chirp(720+shellCount*90);}});
+    if(shellSpawnTimer>=shellEvery){shellSpawnTimer%=shellEvery;shells.push(createShell());showMsg('A new conch washed ashore!');}
+    if(crabSpawnTimer>=crabEvery){crabSpawnTimer%=crabEvery;crabs.push(createCrab());showMsg('A crab scuttled onto the island!');}
+    for(let i=shells.length-1;i>=0;i--){const sh=shells[i];if(Math.hypot(player.x-sh.x,player.y-sh.y)<27){shells.splice(i,1);coins++;totalCoins++;totalPoints++;coinsEl.textContent=totalCoins;pointsEl.textContent=totalPoints;try{localStorage.setItem(coinsKey,String(totalCoins));localStorage.setItem(pointsKey,String(totalPoints));}catch(_){}refreshIslandOptions();showMsg('Conch collected! +1 coin and +1 point');chirp(810);}}
     crabs.forEach(c=>{c.phase+=dt*.001*c.speed;c.x=c.baseX+Math.cos(c.phase)*31;c.y=c.baseY+Math.sin(c.phase*1.3)*18;if(player.invuln<=0&&Math.hypot(player.x-c.x,player.y-c.y)<25){hearts--;heartsEl.textContent='♥ '.repeat(hearts)+'♡ '.repeat(3-hearts);player.invuln=1700;const a=Math.atan2(player.y-c.y,player.x-c.x);player.x=Math.max(90,Math.min(870,player.x+Math.cos(a)*34));player.y=Math.max(115,Math.min(550,player.y+Math.sin(a)*34));showMsg(hearts?'Crab pinch! Mind your toes!':'');chirp(180);if(hearts<=0)endGame(false,'The crabs got the better of you!');}});
-    if(shellCount===5&&Math.hypot(player.x-480,player.y-136)<62)endGame(true,'The shrine glows with the song of the sea!');
-    timerEl.textContent=`${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(Math.floor(remaining%60)).padStart(2,'0')}`;
   }
   function showMsg(text){messageEl.textContent=text;messageEl.classList.add('show');clearTimeout(msgTimer);msgTimer=setTimeout(()=>messageEl.classList.remove('show'),1700);}
   function endGame(success,copy){running=false;won=success;lost=!success;titleEl.textContent=success?'Island harmony!':'Try another tide';textEl.textContent=success?`${copy} You gathered every conch on ${stages[currentStage].name} and brought its music home.`:`${copy} The shells on ${stages[currentStage].name} are waiting when you're ready.`;artEl.textContent=success?'🌺 ✨ 🐚':'🌧️ 🦀 🌊';playBtn.textContent='Play again';overlay.classList.remove('hidden');}
-  function stageUnlocked(index){return Date.now()>=firstVisit+unlockDelays[index];}
-  function formatWait(ms){const secs=Math.ceil(ms/1000);return `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;}
-  function refreshIslandOptions(){islandButtons.forEach((button,index)=>{const unlocked=stageUnlocked(index),small=button.querySelector('small');button.disabled=!unlocked;small.textContent=unlocked?(index===0?'Open now':'Open · ready'):`Opens in ${formatWait(firstVisit+unlockDelays[index]-Date.now())}`;button.classList.toggle('selected',index===selectedStage);});if(!stageUnlocked(selectedStage)){selectedStage=0;refreshIslandOptions();}}
-  function start(index=selectedStage){if(!stageUnlocked(index)){refreshIslandOptions();return;}selectedStage=index;currentStage=index;const stage=stages[index];shellCount=0;remaining=90;hearts=3;won=lost=paused=false;player.x=480;player.y=542;player.invuln=0;shells=stage.shells.map(([x,y],i)=>({x,y,got:false,phase:i*1.17}));crabs=stage.crabs.map(([x,y],i)=>({x,y,baseX:x,baseY:y,phase:i*2,speed:.8+i*.1}));foundEl.textContent='0';heartsEl.textContent='♥ ♥ ♥';timerEl.textContent='01:30';titleEl.textContent=`${stage.name} awaits`;textEl.textContent=`Find five conch shells on ${stage.name}, dodge the crabs, then return to its seaside shrine.`;artEl.textContent=`${stage.icon} 🐚 🌺`;playBtn.textContent=`Sail to ${stage.name}`;overlay.classList.add('hidden');running=true;last=performance.now();}
+  function stageUnlocked(index){return totalPoints>=unlockPoints[index];}
+  function refreshIslandOptions(){islandButtons.forEach((button,index)=>{const unlocked=stageUnlocked(index),small=button.querySelector('small');button.disabled=!unlocked;small.textContent=unlocked?(index===0?'Open now':'Unlocked · ready'):`Needs ${unlockPoints[index]} points`;button.classList.toggle('selected',index===selectedStage);});if(!stageUnlocked(selectedStage)){selectedStage=0;refreshIslandOptions();}}
+  function randomIslandPoint(){let x,y,tries=0;do{x=90+Math.random()*780;y=150+Math.random()*410;tries++;}while((!pointIn(x,y)||Math.hypot(x-480,y-136)<65||Math.hypot(x-player.x,y-player.y)<90)&&tries<100);return{x,y};}
+  function createShell(){const p=randomIslandPoint();return{...p,got:false,phase:Math.random()*6};}
+  function createCrab(){const p=randomIslandPoint();return{...p,baseX:p.x,baseY:p.y,phase:Math.random()*6,speed:.8+Math.random()*.5};}
+  function start(index=selectedStage){if(!stageUnlocked(index)){refreshIslandOptions();return;}selectedStage=index;currentStage=index;const stage=stages[index];coins=0;hearts=3;won=lost=paused=false;elapsed=0;shellSpawnTimer=0;crabSpawnTimer=0;player.x=480;player.y=542;player.invuln=0;shells=stage.shells.map(([x,y],i)=>({x,y,got:false,phase:i*1.17}));crabs=stage.crabs.map(([x,y],i)=>({x,y,baseX:x,baseY:y,phase:i*2,speed:.8+i*.1}));coinsEl.textContent=totalCoins;pointsEl.textContent=totalPoints;heartsEl.textContent='♥ ♥ ♥';titleEl.textContent=`${stage.name} awaits`;textEl.textContent=`Collect conches for coins and points. Every ten seconds a new conch and a new crab arrive.`;artEl.textContent=`${stage.icon} 🐚 🌺`;playBtn.textContent=`Sail to ${stage.name}`;overlay.classList.add('hidden');running=true;last=performance.now();}
   refreshIslandOptions();setInterval(refreshIslandOptions,1000);
   function chirp(freq){if(!soundOn)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();let o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.08,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.18);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.19);}catch(_){}}
   function frame(t){let dt=Math.min(40,t-(last||t));last=t;update(dt,t);draw(t);requestAnimationFrame(frame);}requestAnimationFrame(frame);
